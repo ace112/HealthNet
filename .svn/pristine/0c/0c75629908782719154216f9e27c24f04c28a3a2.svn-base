@@ -1,0 +1,66 @@
+from django.shortcuts import render
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from .models import Prescription
+from core.mixins import DoctorMixin, DoctorPatientMixin, NurseMixin
+from .forms import PrescriptionCreateForm
+from .models import Prescription, Test
+from core.mixins import DoctorPatientMixin, NurseMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
+from django.template.response import TemplateResponse
+from core.models import Log
+# Create your views here.
+
+
+class CreatePrescriptionView(LoginRequiredMixin, DoctorMixin, CreateView):
+    model = Prescription
+    template_name = 'create_prescription.html'
+    form_class = PrescriptionCreateForm
+    success_url = '/dashboard'
+
+    def form_valid(self, form):
+        Log.objects.create(log_type='create appointment', description="Prescription was created: " +
+                                                                      self.request.user.email)
+        return super(CreatePrescriptionView, self).form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(user=self.request.user)
+
+        return kwargs
+
+
+class DeletePrescriptionView(LoginRequiredMixin, DoctorMixin, DeleteView):
+    model = Prescription
+    success_url = '/dashboard'
+    template_name = 'prescription_delete.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if self.request.user.id not in ([obj.doctor.id] + [obj.patient.id]):
+            return TemplateResponse(request, 'errors/error.html')
+
+        return super(DeletePrescriptionView, self).dispatch(request, *args, **kwargs)
+
+
+class PrescriptionView(LoginRequiredMixin, ListView):
+    model = Prescription
+    template_name = 'prescriptions.html'
+
+
+class TestView(ListView):
+    model = Test
+    template_name = 'tests.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(PrescriptionView, self).get_context_data(**kwargs)
+        if self.request.user.user_type == 'NU':
+            context['prescriptions'] = Prescription.objects.filter(
+                Q(patient__hospital=self.request.user.hospital) or
+                Q(doctor__hospital=self.request.user.hospital)
+            ).order_by('time')
+        else:
+            context['prescriptions'] = Prescription.objects.filter(patient=self.kwargs['pk']).order_by('time')
+        return context

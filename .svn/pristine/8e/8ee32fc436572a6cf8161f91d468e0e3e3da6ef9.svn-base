@@ -1,0 +1,187 @@
+from django.shortcuts import render
+from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
+from django.views.generic import View, TemplateView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from core.mixins import DoctorMixin, DoctorPatientMixin, NurseMixin
+from .forms import PrescriptionCreateForm, TestCreateForm
+from .models import Prescription, Test
+from core.mixins import DoctorPatientMixin, NurseMixin, AdminMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
+from django.db import models
+from django.template.response import TemplateResponse
+from core.models import Log, User
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from core.models import User
+from django.core.urlresolvers import reverse_lazy
+from django.shortcuts import get_object_or_404
+# Create your views here.
+
+
+class CreatePrescriptionView(LoginRequiredMixin, DoctorMixin, CreateView):
+    model = Prescription
+    model2 = User
+    template_name = 'create_prescription.html'
+    form_class = PrescriptionCreateForm
+
+    def get_success_url(self):
+        return reverse_lazy('prescriptions', args=[self.kwargs.get('pk')])
+
+    def form_valid(self, form):
+        Log.objects.create(
+            log_type='create Prescription',
+            description="Prescription was created: " + self.request.user.email
+        )
+        return super(CreatePrescriptionView, self).form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(user=self.request.user, pat=User.objects.get(pk=self.kwargs['pk']))
+
+        return kwargs
+
+
+class DeletePrescriptionView(LoginRequiredMixin, DoctorMixin, DeleteView):
+    model = Prescription
+    pk_url_kwarg = 'pres_pk'
+    template_name = 'prescription_delete.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        obj = self.get_object()
+        if self.request.user.id not in ([obj.doctor.id] + [obj.patient.id]):
+            return TemplateResponse(request, 'errors/error.html')
+
+        return super(DeletePrescriptionView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('prescriptions', args=[self.request.user.id])
+
+
+class PrescriptionView(LoginRequiredMixin, ListView):
+    model = Prescription
+    model2 = User
+    template_name = 'prescriptions.html'
+
+    def get_context_data(self, **kwargs):
+        pk = self.kwargs['pk']
+        context = super(PrescriptionView, self).get_context_data(**kwargs)
+        if self.request.user.user_type == 'NU':
+            context['prescriptions'] = Prescription.objects.filter(
+                Q(patient__hospital=self.request.user.hospital) and Q(patient=pk)).order_by('time')
+        else:
+            context["prescriptions"] = Prescription.objects.filter(patient=pk).order_by('time')
+            context["patient"] = User.objects.get(pk=pk)
+        return context
+
+
+class CreateTestView(DoctorMixin, CreateView):
+    model = Test
+    template_name = 'create_test.html'
+    form_class = TestCreateForm
+
+    def dispatch(self, request, *args, **kwargs):
+        patient_id = self.kwargs.get('pk')
+        patient = get_object_or_404(User, id = patient_id)
+        if patient.user_type != 'PA':
+            return TemplateResponse(request, 'errors/error.html')
+
+        return super(CreateTestView, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        return super(CreateTestView, self).form_valid(form)
+        # Do file validation here
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(user=self.request.user)
+        kwargs.update(patient_id=self.kwargs.get('pk'))
+
+        return kwargs
+
+    def get_success_url(self):
+        return reverse_lazy('tests', args=[self.kwargs.get('pk')])
+
+
+class UpdateTestView(DoctorMixin, UpdateView):
+    model = Test
+    pk_url_kwarg = 'test_pk'
+    fields = ['time', 'description', 'released', 'comments', 'image']
+    template_name = 'update_test.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        patient_id = self.kwargs.get('pk')
+        patient = get_object_or_404(User, id = patient_id)
+        if patient.user_type != 'PA':
+            return TemplateResponse(request, 'errors/error.html')
+
+        return super(UpdateTestView, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        return super(UpdateTestView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('tests', args=[self.kwargs.get('pk')])
+
+
+class DeleteTestView(DoctorMixin, DeleteView):
+    model = Test
+    pk_url_kwarg = 'test_pk'
+    template_name = 'delete_test.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        patient_id = self.kwargs.get('pk')
+        patient = get_object_or_404(User, id = patient_id)
+        if patient.user_type != 'PA':
+            return TemplateResponse(request, 'errors/error.html')
+
+        return super(DeleteTestView, self).dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        return reverse_lazy('tests', args=[self.kwargs.get('pk')])
+
+
+class TestView(LoginRequiredMixin, ListView):
+    model = Test
+    template_name = 'tests.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(TestView, self).get_context_data(**kwargs)
+        context['patient_id'] = self.kwargs.get('pk')
+        context['patient'] = User.objects.get(id=context['patient_id'])
+        context['tests'] = Test.objects.filter(subject=context['patient']).order_by('time')
+        return context
+
+
+class ImageTestView(LoginRequiredMixin, TemplateView):
+    template_name = 'view_image_test.html'
+    #pk_url_kwarg = 'test_pk'
+
+    def get_context_data(self, **kwargs):
+        context = super(ImageTestView, self).get_context_data(**kwargs)
+        context['patient_id'] = self.kwargs.get('pk')
+        context['patient'] = User.objects.get(id=context['patient_id'])
+        context['test_id'] = self.kwargs.get('test_pk')
+        context['test'] = get_object_or_404(Test, id=context['test_id'])
+        return context
+
+
+class StatisticsJson(LoginRequiredMixin, AdminMixin, View):
+
+     def get(self, request, *args, **kwargs):
+        from django.http import JsonResponse
+        hospital = self.request.user.hospital
+        return JsonResponse(
+            {
+                'hospital': hospital.name,
+                'stats' :
+                {
+                    'Average Patients': hospital.average_patient_per_day(),
+                    'Average Visits': 1,
+                    'Average Duration': 1,
+                    'Most Common Reason': hospital.most_common_reason(),
+                    'Prescription': 1,
+                }
+            }
+        )

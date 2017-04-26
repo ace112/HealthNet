@@ -1,0 +1,59 @@
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from .models import User, Hospital, Log, ExtendedStay
+from django.contrib.auth.models import Group
+
+
+class UserAdmin(UserAdmin):
+    fieldsets = [
+        ('Standard Info',
+            {
+                'fields': [
+                    'email',
+                    'password',
+                    'first_name',
+                    'last_name',
+                    'user_type',
+                    'hospital',
+                    'is_staff'
+                ]
+            }
+        ),
+        ('Medical Information',
+            {
+                'fields': [
+                    'insurance',
+                    'address',
+                    'phone',
+                    'emergency_contact_email',
+                    'weight',
+                    'height',
+                    'birthday'
+                ],
+                'classes': ['collapse']
+            }
+        ),
+    ]
+
+    list_filter = ('user_type',)
+    list_display = ('email', 'first_name', 'last_name', 'user_type')
+
+
+class LogAdmin(admin.ModelAdmin):
+    list_filter = ('log_type',)
+    list_display = ('date', 'log_type',)
+    ordering = ('date',)
+
+
+class ExtendedStayAdmin(admin.ModelAdmin):
+    readonly_fields = ('start',)
+    list_filter = ('start', 'end',)
+    list_display = ('user', 'start', 'end', 'duration')
+    ordering = ('-start',)
+
+# Register your models here.
+admin.site.register(User, UserAdmin)
+admin.site.register(Hospital)
+admin.site.register(Log, LogAdmin)
+admin.site.unregister(Group)
+admin.site.register(ExtendedStay, ExtendedStayAdmin)

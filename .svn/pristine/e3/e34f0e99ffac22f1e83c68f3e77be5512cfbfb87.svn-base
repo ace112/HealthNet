@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Calendar{% endblock %}
+
+{% block head %}
+    <style> .errorlist {list-style: none; padding: 0px; color: red;}</style>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block content %}
+
+<h1>Appointment Calendar</h1>
+<a href = "{% url 'create' %}"><button type="submit" class="btn btn-primary">Create</button></a>
+<p></p>
+<table class="table table-striped">
+    <tr>
+        <th>Time</th>
+        <th>Reason For Appointment</th>
+        {% if user.user_type != 'DO' %}
+            <th>Doctor</th>
+        {% endif %}
+        {% if user.user_type != 'PA' %}
+            <th>Patient</th>
+        {% endif %}
+        <th>Update Appointment</th>
+        {% if user.user_type != 'NU' %}
+            <th>Cancel Appointment</th>
+        {% endif %}
+
+    </tr>
+    {% for appointment in appointments %}
+        <tr>
+        <td>{{ appointment.time }}</td>
+        <td>{{ appointment.message }}</td>
+        {% if user.user_type != 'DO' %}
+            <td>{{ appointment.doctor }}</td>
+        {% endif %}
+        {% if user.user_type != 'PA' %}
+            <td>{{ appointment.patient }}</td>
+        {% endif %}
+        <td><a href ="{% url 'update' appointment.id %}"><button type="submit" class="btn btn-primary">Update</button></a></td>
+        {% if user.user_type != 'NU' %}
+            <td><a href ="{% url 'delete' appointment.id %}"><button type="submit" class="btn btn-primary">Cancel
+            </button></a></td>
+        {% endif %}
+
+        {% endfor %}
+    </tr>
+</table>
+
+<style>
+    th {
+        background-color: #EEE;
+        text-align: center;
+    }
+
+    td {
+        text-align: center;
+    }
+
+    btn {
+        margin: auto;
+        display: block;
+    }
+</style>
+
+{% endblock %}

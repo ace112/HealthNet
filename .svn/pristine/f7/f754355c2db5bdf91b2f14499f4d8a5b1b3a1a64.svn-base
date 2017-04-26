@@ -1,0 +1,10 @@
+from django.conf.urls import url
+
+from . import views
+
+urlpatterns = [
+    # url(r'^(?P<pk>[0-9]+)/tests/$', views.TestView.as_view(), name='tests'),
+    # url(r'^(?P<pk>[0-9]+)/results/$', views.ResultView.as_view(), name='results'),
+    url(r'^(?P<pk>[0-9]+)/prescriptions/$', views.PrescriptionView.as_view(), name='prescriptions'),
+    url(r'^(?P<pk>[0-9]+)/tests/$', views.TestView.as_view(), name='tests'),
+]

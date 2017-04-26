@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}HealthNet{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+    <link rel="stylesheet" href="{% static 'css/home.css' %}"  />
+{% endblock %}
+
+{% block content %}
+<!--body content starts here-->
+    <section id="body">
+        <body>
+            <section id="main">
+                <div style="text-align:center">
+                    <div>
+                        <h2 class='animated slideInDown underlineAnimation' style="
+                            font-weight: 100;
+                            font-size: 200;
+                            width: 900px;
+                            margin: auto;
+                            color: #1d97e4;
+                            margin-top: 80px;">HealthNet</h2>
+                        <div style='margin-top: 60px;' class='animated slideInUp'>
+                            <a href="{% url 'register' %}"><button type="button" class="btn btn-outline-primary ">Register</button></a>
+                            <a href="{% url 'login' %}"><button type="button" class="btn btn-outline-primary ">Login</button></a>
+                        </div>
+                        <script>
+                            {% if user.is_authenticated %}
+                                window.location.href = "{% url 'dashboard' %}";
+                            {% endif %}
+                        </script>
+                        <style>
+                            .underlineAnimation
+                            {
+                            -webkit-transition: 0.5s ease;
+                            transition: 0.5s ease;
+                            border-bottom: 2px solid rgba(110, 181, 226, 0.65);
+                            }
+                            .btn-outline-primary
+                            {
+                                background-color: transparent;
+                                border-color: lightblue;
+                                width: 16%;
+                                margin: 20px;
+                                border-width: 1px;
+                            }
+                        </style>
+                    </div>
+                </div>
+            </section>
+        </body>
+        <br/>
+        <div class='animated slideInUp Animation' style="
+                            font-weight: 100;
+                            font-size: 200;
+                            width: 1500px;
+                            margin: auto;
+                            color: #fffff;">
+            <section id="pictures">
+                <img src="{% static 'photos/hospital-min-min.png' %}" alt="My image" style="width:404px;height:328px;">
+                <img src="{% static 'photos/gear-min.png' %}" style="width:404px;height:328px;">
+                <img src="{% static 'photos/docs-min.png' %}" style="width:404px;height:328px;">
+            </section>
+            <script>
+                {% if user.is_authenticated %}
+                    window.location.href = "{% url 'dashboard' %}";
+                {% endif %}
+            </script>
+        </div>
+
+
+                <!-- Doc Modal -->
+                <div class="modal fade" id="myDoctors" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">Our Doctors</h4>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Our doctors are available 24/7 to help with whatever medical problem or emergency you have. Your health is our primary concern and we're always here whenever you need us.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div>
+
+                <!-- Hospital Modal -->
+                <div class="modal fade" id="myHospitals" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">Our Hospitals</h4>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>With hospitals coming from across the country, HealthNet strives to make all hospitals united under one app. Our hospitals are positioned throughout the country so wherever you are, we're always here to help.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div>
+
+                <!-- About Modal -->
+                <div class="modal fade" id="About" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">About Us</h4>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>As a partner of HAccelerator, we are working to make it easier for hospitals to manage your information and health records. We make your health our primary concern and  strive to make your access to doctors easier and efficient.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div>
+
+                <!-- Contact Modal -->
+                <div class="modal fade" id="Contact" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h4 class="modal-title">Contact</h4>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Email us at aka2301@g.rit.edu</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div>
+    </section>
+
+<!--footer start from here-->
+    <section id="footer">
+        <footer class="site-footer">
+            <div class="row">
+
+                <div class="col-md-4 col-sm-6 footerleft ">
+                    <h6 class="sign up">Sign Up</h6>
+                        <a href="{% url 'register' %}">Register</a><br/>
+                        <a href="{% url 'login' %}">Login</a>
+                </div>
+                <div class="col-md-4 col-sm-6 paddingtop-bottom">
+                    <h6 class="heading7">General Links</h6>
+                        <button type="button" class="btn btn-link" data-toggle="modal" data-target="#myDoctors" style="padding: 0px 0px;">Doctors</button><br/>
+                        <button type="button" class="btn btn-link" data-toggle="modal" data-target="#myHospitals" style="padding: 0px 0px;">Hospitals</button><br/>
+                </div>
+                <div class="col-md-4 col-sm-6 paddingtop-bottom">
+                    <h6 class="heading7">Information</h6>
+                        <button type="button" class="btn btn-link" data-toggle="modal" data-target="#About" style="padding: 0px 0px;">About</button><br/>
+                        <button type="button" class="btn btn-link" data-toggle="modal" data-target="#Contact" style="padding: 0px 0px;">Contact Us</button><br/>
+                </div>
+            </div>
+        </footer>
+    </section>
+
+{% endblock %}

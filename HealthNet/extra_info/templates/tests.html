@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Tests{% endblock %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+
+<h1>Tests for {{ patient.first_name }} {{ patient.last_name }}</h1>
+{% if user.user_type == 'DO' %}
+    <a href = "{% url 'create_t' patient_id %}"><button type="submit" class="btn btn-primary">Create</button></a>
+{% endif %}
+<p></p>
+
+<table class="table table-striped">
+    <tr>
+        <th>Date</th>
+        <th>Description</th>
+        {% if user.user_type != 'DO' %}
+            <th>Comments</th>
+            <th>Image</th>
+        {% endif %}
+        {% if user.user_type == 'DO' %}
+            <th>Status</th>
+            <th>Image</th>
+            <th>Edit/Release Test</th>
+            <th>Delete Test</th>
+        {% endif %}
+    </tr>
+    {% for test in tests %}
+        {% if test.released == True or user.user_type == 'DO' or user.user_type == 'NU'%}
+            <tr>
+                <td>{{ test.time }}</td>
+                <td>{{ test.description }}</td>
+                {% if user.user_type != 'DO' %}
+                    <td>{{ test.comments }}</td>
+                    {% if test.image.url != null %}
+                        <td><a href ="{% url 'image_t' patient_id test.id %}">
+                        <button type="submit" class="btn btn-primary">View</button></a></td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                {% endif %}
+                {% if user.user_type == 'DO' %}
+                    {% if test.released %}
+                        <td>Released</td>
+                    {% else %}
+                        <td>Unreleased</td>
+                    {% endif %}
+                    {% if test.image.url != null %}
+                        <td><a href ="{% url 'image_t' patient_id test.id %}">
+                        <button type="submit" class="btn btn-primary">View</button></a></td>
+                    {% else %}
+                        <td></td>
+                    {% endif %}
+                    <td><a href ="{% url 'update_t' patient_id test.id %}">
+                    <button type="submit" class="btn btn-primary">Edit</button></a></td>
+                    <td><a href ="{% url 'delete_t' patient_id test.id %}">
+                    <button type="submit" class="btn btn-primary">Delete</button></a></td>
+                {% endif %}
+            </tr>
+        {% endif %}
+    {% endfor %}
+</table>
+
+<style>
+    th {
+        background-color: #EEE;
+        text-align: center;
+    }
+
+    td {
+        text-align: center;
+    }
+
+    btn {
+        margin: auto;
+        display: block;
+    }
+</style>
+
+{% endblock %}

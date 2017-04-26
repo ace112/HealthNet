@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Delete Message{% endblock %}
+
+{% block head %}
+    <style> .errorlist {list-style: none; padding: 0px; color: red;}</style>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block content %}
+
+<form method="post" style="width: 600px; margin: auto;">{% csrf_token %}
+
+        <p>Are you sure you want to delete this message?</p>
+        {{ form.as_p }}
+
+    <button type="submit" class="btn btn-danger">Delete</button>
+</form>
+
+{% endblock %}

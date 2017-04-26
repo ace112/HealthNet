@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Transfer{% endblock %}
+
+{% block head %}
+    <style> .errorlist {list-style: none; padding: 0px; color: red;}</style>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block content %}
+<body>
+<h1>Transfer Patient</h1>
+ <form method="post" style="width: 600px; margin: auto;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Transfer</button>
+  </form>
+</body>
+{% endblock %}

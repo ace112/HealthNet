@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Inbox{% endblock %}
+
+{% block content %}
+<h1>Inbox</h1>
+<a href = "{% url 'sendmessage' %}"><button type="submit" class="btn btn-primary">Send Message</button></a>
+<a href = "{% url 'delete_allm' %}"><button type="submit" class="btn btn-danger">Delete All</button></a>
+<p></p>
+<table class="table table-striped">
+    <tr>
+        <th>Sender</th>
+        <th>Message</th>
+        <th></th>
+        <th></th>
+    </tr>
+    {% for message in messages %}
+        <tr>
+        <td>{{ message.sender }}</td>
+        <td>{{ message.message }}</td>
+        <td><a href ="{% url 'reply' message.sender.id %}"><button type="submit" class="btn btn-primary">Reply</button></a></td>
+            <td> <a href ="{% url 'delete_m' message.id %}"><button type="submit" class="btn btn-danger">Delete</button></a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}

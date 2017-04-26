@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Prescription{% endblock %}
+
+{% block head %}
+    <style> .errorlist {list-style: none; padding: 0px; color: red;}</style>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block content %}
+
+<h1>Prescriptions</h1>
+{% if user.user_type == 'DO' %}
+
+<a href = "{% url 'create_p' patient.id %}"><button type="submit" class="btn btn-primary">Create</button></a>
+
+{% endif %}
+<p></p>
+<table class="table table-striped">
+    <tr>
+        <th>Date</th>
+        <th>Medication</th>
+        {% if user.user_type != 'DO' %}
+            <th>Doctor</th>
+        {% endif %}
+        {% if user.user_type != 'PA' %}
+            <th>Patient</th>
+        {% endif %}
+        {% if user.user_type == 'DO' %}
+            <th>Cancel Prescription</th>
+        {% endif %}
+
+    </tr>
+    {% for prescription in prescriptions %}
+        <tr>
+        <td>{{ prescription.time }}</td>
+        <td>{{ prescription.medication }}</td>
+        {% if user.user_type != 'DO' %}
+            <td>{{ prescription.doctor }}</td>
+        {% endif %}
+        {% if user.user_type != 'PA' %}
+            <td>{{ prescription.patient }}</td>
+        {% endif %}
+        {% if user.user_type == 'DO' %}
+            <td><a href ="{% url 'delete_p' prescription.id %}"><button type="submit" class="btn btn-primary">Cancel
+            </button></a></td>
+        {% endif %}
+
+        {% endfor %}
+    </tr>
+</table>
+
+<style>
+    th {
+        background-color: #EEE;
+        text-align: center;
+    }
+
+    td {
+        text-align: center;
+    }
+
+    btn {
+        margin: auto;
+        display: block;
+    }
+</style>
+
+{% endblock %}

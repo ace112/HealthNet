@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}HealthNet{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.5.2/animate.min.css">
+{% endblock %}
+
+{% block content %}
+  <h2 class='animated slideInDown underlineAnimation' style="
+    font-weight: 100;
+    font-size: 200;
+    width: 900px;
+    margin: auto;
+    color: #1d97e4;
+    margin-top: 80px;"
+    >HealthNet</h2>
+    <div style='margin-top: 60px;' class='animated slideInUp'>
+        <a href="{% url 'register' %}"><button type="button" class="btn btn-outline-primary ">Register</button></a>
+        <a href="{% url 'login' %}"><button type="button" class="btn btn-outline-primary ">Login</button></a>
+    </div>
+
+  <script>
+  {% if user.is_authenticated %}
+      window.location.href = "{% url 'dashboard' %}";
+  {% endif %}
+
+
+  </script>
+
+  <style>
+  .underlineAnimation {
+      -webkit-transition: 0.5s ease;
+      transition: 0.5s ease;
+      border-bottom: 2px solid rgba(110, 181, 226, 0.65);
+    }
+
+    .btn-outline-primary {
+        background-color: transparent;
+        border-color: lightblue;
+        width: 16%;
+        margin: 20px;
+        border-width: 1px;
+    }
+
+  </style>
+{% endblock %}

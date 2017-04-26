@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+{% block head %}<link rel="stylesheet" href = "{% static 'css/dashboard.css' %}" />{% endblock %}
+
+{% block content %}
+<h1>Welcome {{ user.first_name | title }} {{ user.last_name | title }} ({{ user.get_user_type }})</h1>
+    {% if user.user_type == 'DO' or user.user_type = 'NU' %}
+    <table class="table table-striped">
+        <tr>
+            <th>Last Name</th>
+            <th>First Name</th>
+            <th>Email</th>
+            <th>Hospital</th>
+            <th>Update Medical Info</th>
+            <th>Manage Prescriptions</th>
+            {% if user.user_type == 'DO' %}
+            <th>Hospital Transfer</th>
+            {% endif %}
+        </tr>
+        {% for x in accessible_users %}
+        <tr>
+            <td>{{ x.last_name }}</td>
+            <td>{{ x.first_name }}</td>
+            <td>{{ x.email }}</td>
+            <td>{{ x.hospital }}</td>
+            <td><a href="{% url 'updatemedical' x.id %}"><button class="btn btn-primary">Update</button></a></td>
+            <td><a href="{% url 'prescriptions' x.id %}"><button class="btn btn-primary">Manage</button></td>
+            {% if user.user_type == 'DO' %}
+            <td><a href="{% url 'transfer' x.id %}"><button class="btn btn-primary">Transfer</button></a></td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <div style='width: 400px; margin: auto;'>
+        {% for x in available_actions %}
+            <a href="{{ x.1 }}"><button class="btn btn-primary" style='width: 100%; margin: 10px;'>{{ x.0 }}</button></a>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endblock %}

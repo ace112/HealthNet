@@ -1,0 +1,153 @@
+from django.shortcuts import render
+from django.shortcuts import redirect
+from django.views.generic.edit import FormView
+from django.views.generic.list import ListView
+from django.views.generic import TemplateView
+from django.views.generic import CreateView, DeleteView, UpdateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .models import Inbox
+from .forms import MessageForm, ReplyForm, DeleteForm
+from core.models import User, Log
+from django.core.urlresolvers import reverse_lazy
+from django.db.models import Q
+# Create your views here.
+
+
+class InboxView(LoginRequiredMixin, ListView):
+    model = Inbox
+    template_name = 'inbox.html'
+
+    def get_context_data(self, **kwargs):
+        self.request.user.unread = 0
+        self.request.user.save()
+        pk = self.request.user.id
+        context = super(InboxView, self).get_context_data(**kwargs)
+        context['messages'] = Inbox.objects.filter(Q(receiver=pk) & Q(todel=False))
+        return context
+
+
+class SentboxView(LoginRequiredMixin, ListView):
+    model = Inbox
+    template_name = 'sentbox.html'
+
+    def get_context_data(self, **kwargs):
+        pk = self.request.user.id
+        context = super(SentboxView, self).get_context_data(**kwargs)
+        context['messages'] = Inbox.objects.filter(Q(sender=pk) & Q(fromdel=False))
+        return context
+
+
+class ReplyMessageView(CreateView):
+    model = Inbox
+    form_class = ReplyForm
+    template_name = 'replymessage.html'
+    success_url = '/dashboard'  # TODO: improve this
+
+    def form_valid(self, form):
+        Log.objects.create(log_type='Message Sent', description="Message was sent to: " +
+                                                                form.cleaned_data['receiver'].email + ", from:" +
+                                                                form.cleaned_data['sender'].email)
+        user = User.objects.get(pk=form.cleaned_data['receiver'].id)
+        user.unread += 1
+        user.save()
+        return super(ReplyMessageView, self).form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(user=self.request.user)
+        kwargs.update(receiver=self.kwargs.get('pk'))
+
+        return kwargs
+
+    def get_success_url(self):
+        return reverse_lazy('inbox')
+
+
+class SendMessageView(CreateView):
+    model = Inbox
+    model2 = User
+    form_class = MessageForm
+    template_name = 'sendmessage.html'
+    success_url = '/dashboard'  # TODO: improve this
+
+    def form_valid(self, form):
+        Log.objects.create(log_type='Message Sent', description="Message was sent to: " +
+                                                                form.cleaned_data['receiver'].email + ", from:" +
+                                                                form.cleaned_data['sender'].email)
+        user = User.objects.get(pk=form.cleaned_data['receiver'].id)
+        user.unread += 1
+        user.save()
+        return super(SendMessageView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('inbox')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(user=self.request.user)
+
+        return kwargs
+
+
+class DeleteMessageView(FormView):
+    model = Inbox
+    template_name = 'delete_message.html'
+    form_class = DeleteForm
+
+    def form_valid(self, form):
+        Log.objects.create(log_type='Message deleted', description="User " + self.request.user.email +
+                                                                   " deleted a message")
+        inboxobject = Inbox.objects.get(pk=self.kwargs.get('pk'))
+        if self.request.user == form.cleaned_data['receiver']:
+            if inboxobject.todel == False:
+                inboxobject.todel = True
+
+        else:
+            if inboxobject.fromdel == False:
+                inboxobject.fromdel = True
+        inboxobject.save()
+
+        return super(DeleteMessageView, self).form_valid(form)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs.update(message=Inbox.objects.get(pk=self.kwargs.get('pk')).message)
+        kwargs.update(receiver=Inbox.objects.get(pk=self.kwargs.get('pk')).receiver)
+        kwargs.update(sender=Inbox.objects.get(pk=self.kwargs.get('pk')).sender)
+
+        return kwargs
+
+    def get_success_url(self):
+        inboxobject = Inbox.objects.get(pk=self.kwargs.get('pk'))
+        inboxobject.delcheck()
+        return reverse_lazy('inbox')
+
+
+def delete_all_messages(request):
+    if request.GET.get('Confirm'):
+        Log.objects.create(log_type='Message deleted', description="User " + request.user.email +
+                                                                   " deleted all inbox messages")
+        for inboxobject in Inbox.objects.filter(receiver=request.user):
+            if inboxobject.todel == False:
+                inboxobject.todel = True
+                inboxobject.save()
+                inboxobject.delcheck()
+
+        return redirect('inbox', request.user.id)
+
+    return render(request, 'delete_all_messages.html')
+
+
+def delete_all_sent_messages(request):
+    if request.GET.get('Confirm'):
+        Log.objects.create(log_type='Message deleted', description="User " + request.user.email +
+                                                                   " deleted all sent messages")
+        for inboxobject in Inbox.objects.filter(sender=request.user):
+            if inboxobject.fromdel == False:
+                inboxobject.fromdel = True
+                inboxobject.save()
+                inboxobject.delcheck()
+
+        return redirect('inbox', request.user.id)
+
+    return render(request, 'delete_all_messages.html')

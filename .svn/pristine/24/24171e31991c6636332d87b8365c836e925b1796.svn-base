@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+  <h2>Login</h2>
+  <form method="post" class='' style='width: 400px; margin: auto;'>
+      <div class='form-group' >
+          {% csrf_token %}
+          {{ form.as_p }}
+          <button type="submit" class="btn btn-primary">Login</button>
+      </div>
+
+  </form>
+  <script>
+    {% if user.is_authenticated %}
+        window.location.href = "{% url 'dashboard' %}";
+    {% endif %}
+
+  </script>
+{% endblock %}

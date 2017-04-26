@@ -1,0 +1,34 @@
+from django import forms
+from .models import Appointment
+from django.conf import settings
+from django.contrib.auth import get_user_model
+User = get_user_model()
+
+
+class AppointmentCreateForm(forms.ModelForm):
+    patient = forms.ModelChoiceField(queryset=User.objects.filter(user_type='PA'))
+    doctor = forms.ModelChoiceField(queryset=User.objects.filter(user_type='DO'))
+
+    class Meta:
+        model = Appointment
+        fields = (
+            'doctor',
+            'patient',
+            'time',
+            'message'
+        )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super(AppointmentCreateForm, self).__init__(*args, **kwargs)
+        if user.user_type == 'PA':
+            self.fields['patient'].initial = user.id
+            self.fields['patient'].disabled = True
+        if user.user_type == 'DO':
+            self.fields['doctor'].initial = user.id
+            self.fields['doctor'].disabled = True
+        for myField in self.fields:
+          self.fields[myField].widget.attrs['class'] = 'form-control'
+
+
+

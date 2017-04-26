@@ -1,0 +1,52 @@
+from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import UserCreationForm
+User = get_user_model()  # fill in custom user info then save it
+
+
+class UserCreateForm(UserCreationForm):
+    # email = forms.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = (
+            "first_name",
+            "last_name",
+            "email",
+            "password1",
+            "password2",
+            'insurance',
+            'address',
+            'phone',
+            'hospital',
+            'gender',
+            'emergency_contact_email',
+            'weight',
+            'height',
+            'birthday'
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(UserCreateForm, self).__init__(*args, **kwargs)
+        for myField in self.fields:
+          self.fields[myField].widget.attrs['class'] = 'form-control'
+          self.fields[myField].required = True
+
+    def save(self, commit=True):
+        user = super(UserCreateForm, self).save(commit=False)
+        user.username = self.cleaned_data['email']
+        for myField in self.fields:
+            user.myField = self.cleaned_data[myField]
+
+        if commit:
+            user.save()
+        return user
+
+class TransferForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['hospital',]
+
+    def __init__(self, *args, **kwargs):
+        super(TransferForm, self).__init__(*args, **kwargs)
+        self.fields['hospital'].required = True

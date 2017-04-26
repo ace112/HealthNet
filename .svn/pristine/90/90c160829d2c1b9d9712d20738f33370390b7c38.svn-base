@@ -1,0 +1,87 @@
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from datetime import datetime
+
+
+# Create your models here.
+GENDER_CHOICES = (
+    ('M', 'Male'),
+    ('F', 'Female'),
+    ('O', 'Other'),
+)
+
+USER_TYPES = (
+    ('DO', 'Doctor'),
+    ('NU', 'Nurse'),
+    ('PA', 'Patient'),
+    ('AD', 'Administrator'),
+)
+
+
+class Hospital(models.Model):
+    name = models.CharField(max_length=80)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        # Log.objects.create(log_type='update Hospital', description="User's Hospital was updated with email "+self.email)
+
+        super(Hospital, self).save(*args, **kwargs)
+
+
+class User(AbstractUser):
+    user_type = models.CharField(
+        max_length=2,
+        choices=USER_TYPES,
+        default='PA',
+    )
+    hospital = models.ForeignKey(Hospital, null=True, blank=True)
+
+    # Medical info
+    insurance = models.CharField(max_length=80, null=True, blank=True )
+    address = models.CharField(max_length=200, null=True, blank=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    emergency_contact_email = models.CharField(max_length=100, null=True, blank=True)
+    weight = models.CharField(max_length=3, null=True, blank=True)
+    height = models.CharField(max_length=5, null=True, blank=True)
+    birthday = models.DateTimeField(null=True, blank=True)
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
+
+    def __str__(self):
+        return self.email
+
+    @property
+    def get_user_type(self):
+        return dict(USER_TYPES)[self.user_type]
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            # Log.objects.create(log_type='create user',
+            #                    description="User was created with email " + self.email)
+            pass
+        else:
+            self.username = self.email
+            self.is_staff = (self.user_type == 'AD' or self.is_superuser)
+        super(User, self).save(*args, **kwargs)
+
+    def delete(self, using=None, keep_parents=False):
+        # Log.objects.create(user=self, log_type='delete user', description="User was deleted with email " + self.email)
+        super(User, self).delete()
+
+    @property
+    def get_emergency_contact(self):
+        # check if user is in system
+
+        user = User.objects.filter(email=self.emergency_contact_email)
+        if user.exists():
+            user = user[0]
+            string = user.email
+            for att in ['first_name', 'last_name', 'phone']:
+                a = getattr(user, att)
+                if a != '' and a != None:
+                    string += ', {}'.format(a)
+
+            return string
+
+        return self.emergency_contact_email

@@ -1,0 +1,99 @@
+from django.test import TestCase, Client, RequestFactory
+from django.core.urlresolvers import reverse_lazy
+from .models import User, Hospital, ExtendedStay
+
+
+class BaseTestCase(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.hospital = Hospital.objects.create(name='Test')
+
+        self.user = User.objects.create_user('test@test.com', 'test@test.com', '123pass321pass')
+
+    def log_in(self):
+        return self.client.login(username=self.user.username, password='123pass321pass')
+
+
+class TestAuth(BaseTestCase):
+
+    def test_client_login(self):
+        login = self.log_in()
+        self.assertTrue(login)
+
+    def test_homepage(self):
+        response = self.client.get('/')
+        self.assertEqual(response.status_code, 200)
+
+    # 302 is redirect, to login screen, instead of 403
+    def test_must_be_logged_in(self):
+        response = self.client.get(reverse_lazy('dashboard'))
+        self.assertEqual(response.status_code, 302)
+
+
+class TestModels(BaseTestCase):
+
+    # ExtendedStay
+    def test_compute_duration(self):
+        from django.utils import timezone
+        import time
+        stay = ExtendedStay.objects.create(user=self.user)
+        stay.end = timezone.now()
+        stay.save()
+
+        self.assertEqual(stay.duration, stay.end - stay.start)
+
+
+class TestUserCreateForm(BaseTestCase):
+
+	def test_valid(self):
+		from .forms import UserCreateForm
+
+		data = {
+			'first_name': 'Tester',
+			'last_name': 'Testing',
+			'email': 'test1@test.com',
+			'password1': 'ASDF@123!',
+			'password2': 'ASDF@123!',
+			'insurance':'123',
+			'address':'123',
+			'phone':'123456789',
+			'hospital':self.hospital.id,
+			'gender':'M',
+			'emergency_contact_email':'test@test.com',
+			'weight':'4',
+			'height':'4',
+			'birthday': "2017-04-05 16:11:31.963644"
+		}
+
+		form = UserCreateForm(data=data)
+		self.assertTrue(form.is_valid())
+		instance = form.save()
+		self.assertEqual(User.objects.get(id=instance.id), instance)
+
+	def test_unique_email(self):
+		from .forms import UserCreateForm
+
+
+		data = {
+			'first_name': 'Tester',
+			'last_name': 'Testing',
+			'email': 'test@test.com',
+			'password1': 'ASDF@123!',
+			'password2': 'ASDF@123!',
+			'insurance':'123',
+			'address':'123',
+			'phone':'123456789',
+			'hospital':self.hospital.id,
+			'gender':'M',
+			'emergency_contact_email':'test@test.com',
+			'weight':'4',
+			'height':'4',
+			'birthday': "2017-04-05 16:11:31.963644"
+		}
+
+		form = UserCreateForm(data=data)
+
+		self.assertFalse(form.is_valid())
+		self.assertEqual(len(form.errors), 1)
+		self.assertIn('email', form.errors)
+		self.assertEqual(form.errors['email'][0], 'User with this Email address already exists.')

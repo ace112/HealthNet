@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Prescription{% endblock %}
+
+{% block head %}
+    <style> .errorlist {list-style: none; padding: 0px; color: red;}</style>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block content %}
+
+<h1>Prescriptions</h1>
+
+{% endblock %}

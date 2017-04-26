@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Medical{% endblock %}
+
+{% block content %}
+<h1>Medical Information</h1>
+<br />
+<table class="table table-striped" style='width: 600px; margin: auto;'>
+    <tr>
+        <td>Insurance:</td><td>{{ user.insurance }}</td>
+    </tr>
+    <tr>
+        <td>Address:</td><td>{{ user.address }}</td>
+    </tr>
+    <tr>
+        <td>Phone:</td><td>{{ user.phone }}</td>
+    </tr>
+    <tr>
+        <td>Emergency Contact:</td><td>{{ user.get_emergency_contact }}</td>
+    </tr>
+    <tr>
+        <td>Weight: </td><td>{{ user.weight }}</td>
+    </tr>
+    <tr>
+        <td>Height: </td><td>{{ user.height }}</td>
+    </tr>
+    <tr>
+        <td>Birthday: </td><td>{{ user.birthday }}</td>
+    </tr>
+</table>
+<p><br/>Click this button if you wish to download a full record of your available medical information, <br/>
+    including basic info, prescriptions, appointments, hospital stays, and released tests. <br/><br/>
+    Some of this information may be sensitive. For the protection of your privacy, do this with discretion.</p>
+<a href ="{% url 'download' %}">
+<button type="submit" class="btn btn-primary">Export</button></a>
+
+{% endblock %}

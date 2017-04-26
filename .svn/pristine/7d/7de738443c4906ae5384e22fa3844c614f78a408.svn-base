@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Page{% endblock %}
+
+{% block content %}
+
+<h1>Selection Action</h1>
+
+<div style='margin-top: 30px;'>
+    <div><a href="{% url 'admincreate' %}"><button type="button" class="btn btn-primary">Create User</button></a></div>
+    <div><a href="{% url 'adminlogs' %}"><button type="button" class="btn btn-primary">View Logs</button></a></div>
+    <div><a href="{% url 'adminstats' %}"><button type="button" class="btn btn-primary">View Stats</button></a></div>
+</div>
+<style>
+    button {
+        width: 500px;
+        margin: 20px;
+        height: 50px;
+    }
+</style>
+{% endblock %}

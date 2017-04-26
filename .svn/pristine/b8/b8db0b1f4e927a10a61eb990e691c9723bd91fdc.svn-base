@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Tests{% endblock %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+
+<h1>Tests for {{ patient.first_name }} {{ patient.last_name }}</h1>
+<a href = "{% url 'create_t' patient_id %}"><button type="submit" class="btn btn-primary">Create</button></a>
+
+<p></p>
+
+<table class="table table-striped">
+    <tr>
+        <th>Date</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Edit/Release Test</th>
+        <th>Delete Test</th>
+    </tr>
+    {% for test in tests %}
+        <tr>
+            <td>{{ test.time }}</td>
+            <td>{{ test.description }}</td>
+            <td>Unreleased</td>
+            <td><a href ="{% url 'update_t' patient_id test.id %}">
+            <button type="submit" class="btn btn-primary">Edit</button></a></td>
+            <td><a href ="{% url 'delete_t' patient_id test.id %}">
+            <button type="submit" class="btn btn-primary">Delete</button></a></td>
+        </tr>
+    {% endfor %}
+</table>
+
+<style>
+    th {
+        background-color: #EEE;
+        text-align: center;
+    }
+
+    td {
+        text-align: center;
+    }
+
+    btn {
+        margin: auto;
+        display: block;
+    }
+</style>
+
+{% endblock %}

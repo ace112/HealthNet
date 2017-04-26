@@ -1,0 +1,13 @@
+th {
+    background-color: #EEE;
+    text-align: center;
+    }
+
+td {
+   text-align: center;
+    }
+
+btn {
+    margin: auto;
+    display: block;
+}

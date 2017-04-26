@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Delete All Messages{% endblock %}
+
+{% block head %}
+    <style> .errorlist {list-style: none; padding: 0px; color: red;}</style>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block content %}
+
+<form method="get">
+    <p>Are you sure you want to delete all messages?</p>
+    <input type="submit" class="btn btn-primary" value="Confirm" name="Confirm">
+</form>
+{% endblock %}

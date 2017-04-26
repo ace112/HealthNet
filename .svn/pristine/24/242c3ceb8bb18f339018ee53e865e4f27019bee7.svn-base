@@ -1,0 +1,113 @@
+from django.shortcuts import render
+from django.views.generic.detail import DetailView
+from django.views.generic.edit import CreateView, FormView, UpdateView
+from django.contrib.auth import get_user_model
+from django.views.generic import TemplateView
+from .forms import UserCreateForm, TransferForm
+from django.forms import ModelForm
+from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.template.response import TemplateResponse
+from .mixins import PatientMixin, LoginRedirectMixin, DoctorMixin
+from django.contrib.auth import authenticate, login
+from django.core.urlresolvers import reverse
+from django.core.exceptions import ValidationError
+from .models import Log
+User = get_user_model()
+
+# Create your views here.
+
+
+class SignUpView(LoginRedirectMixin, CreateView):
+    model = User
+    template_name = 'registration/register.html'
+    success_url = '/dashboard'
+    form_class = UserCreateForm
+
+    def form_valid(self, form):
+        # save the new user first
+        form.save()
+        # get the username and password
+        username = self.request.POST['email']
+        password = self.request.POST['password1']
+        # authenticate user then login
+        user = authenticate(username=username, password=password)
+        login(self.request, user)
+        return super(SignUpView, self).form_valid(form)
+
+
+class DashboardView(LoginRequiredMixin, TemplateView):
+    template_name = 'dashboard.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(DashboardView, self).get_context_data(**kwargs)
+        if self.request.user.user_type == 'DO' or self.request.user.user_type == 'NU':
+            context['accessible_users'] = User.objects.filter(user_type='PA')
+        elif self.request.user.user_type == 'AD':
+            context['available_actions'] = (
+                ('Go to Admin Console', '/admin'),
+                ('View Statistics', '#')
+            )
+        else:
+            context['available_actions'] = [
+                ('View Calendar', reverse('calendar')),
+                ('Update Profile', reverse('profile', args=[self.request.user.id])),
+            ]
+            context['available_actions'].append((
+                    'View Medical Information', reverse('medical')
+                ))
+        return context
+
+
+class MedicalInfoView(LoginRequiredMixin, PatientMixin, TemplateView):
+    template_name = 'medical_info.html'
+
+    Log.objects.create(log_type='view medical info', description="Medical info was viewed")
+
+
+class UpdateProfile(LoginRequiredMixin, UpdateView):
+    model = User
+    fields = ['first_name', 'last_name', 'email', 'gender', 'phone', 'address', 'birthday']
+    template_name = 'update_profile_info.html'
+    success_url = '/dashboard'
+
+    def dispatch(self, request, *args, **kwargs):
+
+        Log.objects.create(log_type='view profile', description="User's profile was viewed: " + User.objects.get(
+            pk=kwargs.get('pk')).email)
+
+        if int(kwargs['pk']) != self.request.user.pk:
+            return TemplateResponse(request, 'errors/error.html')
+
+        if self.request.user.user_type == 'PA':
+            self.fields.append('emergency_contact_email')
+
+        return super(UpdateProfile, self).dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        Log.objects.create(log_type='update user profile', description="User was updated with email: " +
+                                                                       self.request.user.email)
+        return super(UpdateProfile, self).form_valid(form)
+
+
+class UpdateMedicalInfo(LoginRequiredMixin, UpdateView):
+    model = User
+    fields = ['insurance', 'address', 'phone', 'weight', 'height', 'birthday']
+    template_name = 'update_medical.html'
+    success_url = '/dashboard'
+
+    def form_valid(self, form):
+        Log.objects.create(log_type='update medical info', description="Medical info was updated: " +
+                                                                       self.request.user.email)
+        return super(UpdateMedicalInfo, self).form_valid(form)
+
+
+class TransferView(LoginRequiredMixin, DoctorMixin, UpdateView):
+    model = User
+    template_name = 'transfer.html'
+    success_url = '/dashboard'
+    form_class = TransferForm
+
+    def form_valid(self, form):
+        Log.objects.create(log_type='transfer', description="Patient was transferred: " + self.request.user.email)
+        return super(TransferView, self).form_valid(form)

@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Reply to Message{% endblock %}
+
+{% block content %}
+
+<body>
+<h1>Reply to Message</h1>
+ <form method="post" style="width: 600px; margin: auto;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Send</button>
+  </form>
+</body>
+{% endblock %}

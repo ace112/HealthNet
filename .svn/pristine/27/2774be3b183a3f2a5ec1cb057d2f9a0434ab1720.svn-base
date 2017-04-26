@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Image for test at {{ test.time }}{% endblock %}
+
+{% block head %}{% endblock %}
+
+{% block content %}
+
+<h1>Image for test of patient {{ patient.first_name }} {{ patient.last_name }} from {{ test.time }}</h1>
+
+<img src='{{ test.image.url }}'>
+
+<p></p>
+
+<a href ="{% url 'tests' patient_id %}">
+<button type="submit" class="btn btn-primary">Close</button></a>
+
+{% endblock %}

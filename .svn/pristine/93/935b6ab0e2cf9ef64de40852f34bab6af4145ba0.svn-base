@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+{% block head %}
+<link rel="stylesheet" href = "{% static 'css/dashboard.css' %}" />
+<script src="{% static 'plugins/stupidtable.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<h1>Welcome {{ user.first_name | title }} {{ user.last_name | title }} ({{ user.get_user_type }})</h1>
+    {% if user.user_type == 'DO' or user.user_type == 'NU' %}
+    <input type="text" id="searchInput" onkeyup="searchFunction()" placeholder="Search for patients...">
+    <table id="main-table" class="table table-striped">
+        <thead>
+        <tr>
+            <th data-sort="string">Last Name</th>
+            <th data-sort="string">First Name</th>
+            <th data-sort="string">Email</th>
+            <th>Hospital</th>
+            <th>Update Medical Info</th>
+            <th>Manage Prescriptions</th>
+            <th>Admit/Discharge</th>
+            {% if user.user_type == 'NU' %}
+            <th>View Tests</th>
+            {% endif %}
+            {% if user.user_type == 'DO' %}
+            <th>Manage Tests</th>
+            <th>Hospital Transfer</th>
+            {% endif %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for x in accessible_users %}
+
+        <tr>
+            <td>{{ x.last_name }}</td>
+            <td>{{ x.first_name }}</td>
+            <td>{{ x.email }}</td>
+            <td>{{ x.hospital }}</td>
+            <td><a href="{% url 'updatemedical' x.id %}"><button class="btn btn-primary">Update</button></a></td>
+            <td><a href="{% url 'prescriptions' x.id %}"><button class="btn btn-primary">Manage</button></a></td>
+
+            {% if not x.is_admitted %}
+                <td><a href="{% url 'admit' x.id %}"><button class="btn btn-primary">Admit</button></a></td>
+            {% else %}
+                <td><a href="{% url 'discharge' x.id %}"><button type="button" class="btn btn-danger" {% if user.user_type == 'NU' %}disabled{% endif %}>Discharge</button></a></td>
+            {% endif %}
+
+            <td><a href="{% url 'tests' x.id %}"><button class="btn btn-primary">Tests</button> </a></td>
+            {% if user.user_type == 'DO' %}
+            <td><a href="{% url 'transfer' x.id %}"><button class="btn btn-primary">Transfer</button></a></td>
+            {% endif %}
+        </tr>
+
+        {% endfor %}
+        </tbody>
+
+
+    </table>
+    {% elif user.user_type == 'PA' %}
+    <div style='width: 400px; margin: auto;'>
+        {% for x in available_actions %}
+        <td>
+            <a href="{{ x.1 }}"><button class="btn btn-primary" style='width: 100%; margin: 10px;'>{{ x.0 }}</button></a>
+        </td>
+        {% endfor %}
+    {% else %}
+
+    <div style='width: 400px; margin: auto;'>
+        <a href="/admin"><button class="btn btn-primary" style='width: 100%; margin: 10px;'>Go to Admin Console</button></a>
+        <button id="stats-button" class="btn btn-primary"  data-target="#stats-modal" style='width: 100%; margin: 10px;'>View Statistics</button>
+    </div>
+    <!-- Stats Modal -->
+    <div class="modal fade " id="stats-modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">System Statistics</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <img id='load-animation' src="{% static 'photos/ring.svg' %}" />
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+
+    <style>
+        #searchInput {
+            width: 40%;
+            margin: auto;
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+
+    </style>
+
+    <script>
+    $(document).ready(function()
+        {
+            $("#main-table").stupidtable();
+        }
+    );
+    function searchFunction() {
+        // Declare variables
+        var input, filter, table, tr, td, i;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("main-table");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those who don't match the search query
+        for (i = 1; i < tr.length; i++) {
+
+            td = tr[i].getElementsByTagName("td")[0].innerHTML + " " + tr[i].getElementsByTagName("td")[1].innerHTML + " " + tr[i].getElementsByTagName("td")[2].innerHTML;
+            if (td) {
+              if (td.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+              } else {
+                tr[i].style.display = "none";
+              }
+            }
+        }
+    }
+
+    $('button[data-target="#stats-modal"]').click(function(){
+        var $loadIcon = $('#load-animation');
+        var $body = $loadIcon.parent();
+        $loadIcon.show();
+        $.ajax({
+            url: "{% url 'stats' %}",
+            success: function(result){
+                $loadIcon.hide();
+                var stats = "";
+                stats += '<div><span style="float:left">Hospital: </span><span style="float: right">' + result.hospital + '</span></div><hr style="clear:both;">';
+                for (var key in result.stats) {
+                    stats += '<div><span style="float:left">' + key + ': </span><span style="float: right">' + result.stats[key] + '</span></div><hr style="clear:both;">';
+                }
+                $body.empty();
+                $body.append($loadIcon);
+                $body.append(stats);
+            }
+        });
+        $("#stats-modal").modal('toggle');
+    });
+
+    </script>
+{% endblock %}

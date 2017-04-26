@@ -1,0 +1,17 @@
+body {
+    text-align: center;
+}
+
+th {
+    background-color: #EEE;
+    text-align: center;
+}
+
+td {
+    text-align: center;
+}
+
+.table {
+    margin: auto;
+    width: 80%;
+}

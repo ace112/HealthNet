@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Register{% endblock %}
+
+{% block head %}
+    <style> .errorlist {list-style: none; padding: 0px; color: red;}</style>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+{% endblock %}
+
+{% block content %}
+  <h2>Register</h2>
+  <form method="post" style="width: 600px; margin: auto; margin-bottom: 20px;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Register</button>
+  </form>
+  <script>
+      {% if user.is_authenticated %}
+          window.location.href = "{% url 'dashboard' %}";
+      {% endif %}
+    jQuery('#id_birthday').datepicker(
+      {
+          format: 'Y-m-d',
+          direction: 'up',
+          maxDate: '0d',
+          changeYear: true,
+          changeMonth: true,
+          yearRange: '-100:'
+      }
+  );
+</script>
+{% endblock %}

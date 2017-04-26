@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Create Prescription{% endblock %}
+
+{% block head %}
+    <style> .errorlist {list-style: none; padding: 0px; color: red;}</style>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'plugins/datetime/jquery.datetimepicker.min.css' %}"/ >
+    <script src="{% static 'plugins/datetime/jquery.datetimepicker.full.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<body>
+<h1>Create Prescription</h1>
+ <form method="post" style="width: 600px; margin: auto;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Create</button>
+  </form>
+</body>
+{% endblock %}

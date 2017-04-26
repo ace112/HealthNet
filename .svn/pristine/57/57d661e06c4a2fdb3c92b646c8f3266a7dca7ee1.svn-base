@@ -1,0 +1,31 @@
+from django.shortcuts import render
+from django.views.generic.list import ListView
+from django.views.generic.edit import CreateView, DeleteView, UpdateView
+from .models import Prescription, Test
+from core.mixins import DoctorPatientMixin, NurseMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Q
+from django.template.response import TemplateResponse
+# Create your views here.
+
+"""
+class CreatePrescriptionView():
+    model = Prescription
+
+
+class DeletePrescriptionView():
+    model = Prescription
+
+
+class UpdatePrescriptionView():
+    model = Prescription
+"""
+
+class PrescriptionView(ListView):
+    model = Prescription
+    template_name = 'prescriptions.html'
+
+
+class TestView(ListView):
+    model = Test
+    template_name = 'tests.html'
